@@ -97,6 +97,12 @@ void ConsoleManager::startScheduler() {
         int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
         createProcess(procName, instCount);
     }
+
+    //for CPU ticks
+    for(int cycle= 0; cycle < 280; ++cycle){
+        scheduler->tick();
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
+    }
 }
 
 void ConsoleManager::stopScheduler() {
@@ -109,6 +115,10 @@ void ConsoleManager::createProcess(const std::string& name, int instructionCount
     processTable[name] = proc;
     allProcesses.push_back(proc);
     std::cout << "Process " << name << " created with " << instructionCount << " instructions.\n";
+
+    if(scheduler){
+        scheduler->addProcess(proc);
+    }
 }
 
 void ConsoleManager::listScreens() {
