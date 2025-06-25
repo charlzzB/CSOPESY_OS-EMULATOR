@@ -22,7 +22,8 @@ void Process::executeNextInstruction(int coreID) {
 
     if (commandCounter >= linesOfCode) {
         currentState = FINISHED;
-    }
+    } 
+    
 }
 
 bool Process::isFinished() const {

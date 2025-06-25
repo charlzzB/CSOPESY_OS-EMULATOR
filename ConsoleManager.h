@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 #include "Process.h"
+#include "Scheduler.h"
+#include <thread>
 
 class ConsoleManager {
 public:
@@ -40,4 +42,11 @@ private:
     int minInstructions = 5;
     int maxInstructions = 10;
     int delayPerExec = 0;
+
+    Scheduler* scheduler = nullptr;
+    std::thread schedulerThread;
+    bool schedulerRunning = false;
+    std::vector<std::shared_ptr<Instruction>> generateDummyInstructions(int count);
+
+
 };

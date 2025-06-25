@@ -1,5 +1,6 @@
 #include "ConsoleManager.h"
 #include "Instruction.h"
+#include "Scheduler.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -59,6 +60,7 @@ void ConsoleManager::run() {
 void ConsoleManager::initialize() {
     loadConfig();
     isInitialized = true;
+    scheduler = new Scheduler(numCPU, schedulerAlgo, quantumCycles);
     std::cout << "System initialized successfully.\n";
 }
 
@@ -85,6 +87,7 @@ void ConsoleManager::loadConfig() {
               << minInstructions << "/" << maxInstructions << ", Delay = " << delayPerExec << "\n";
 }
 
+// ally edited this 
 void ConsoleManager::startScheduler() {
     std::cout << "Starting process generation...\n";
 
@@ -95,19 +98,51 @@ void ConsoleManager::startScheduler() {
         int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
         createProcess(procName, instCount);
     }
+
+    schedulerRunning = true;
+    schedulerThread = std::thread([this]() {
+    while (schedulerRunning) {
+        scheduler->tick();
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
+    }
+    });
 }
 
 void ConsoleManager::stopScheduler() {
     std::cout << "Process generation stopped.\n";
     // No thread for now, so no-op
+    schedulerRunning = false;
+    if (schedulerThread.joinable()) schedulerThread.join();
 }
+
+std::vector<std::shared_ptr<Instruction>> ConsoleManager::generateDummyInstructions(int count) {
+    std::vector<std::shared_ptr<Instruction>> insts;
+    for (int i = 0; i < count; ++i) {
+        insts.push_back(std::make_shared<PrintInstruction>("Instruction " + std::to_string(i)));
+    }
+    return insts;
+}
+
+
 
 void ConsoleManager::createProcess(const std::string& name, int instructionCount) {
     auto proc = std::make_shared<Process>(++currentPID, name, instructionCount);
+
+    // Generate dummy instructions
+    std::vector<std::shared_ptr<Instruction>> insts;
+    for (int i = 0; i < instructionCount; ++i) {
+        insts.push_back(std::make_shared<PrintInstruction>("Instruction " + std::to_string(i)));
+    }
+
+    proc->setInstructions(insts);
+
     processTable[name] = proc;
     allProcesses.push_back(proc);
+    scheduler->addProcess(proc);
     std::cout << "Process " << name << " created with " << instructionCount << " instructions.\n";
 }
+
+// ally edited this 
 
 void ConsoleManager::listScreens() {
     std::cout << "Currently running processes:\n";
@@ -170,3 +205,5 @@ void ConsoleManager::generateReport() {
 int ConsoleManager::getCurrentPID() const {
     return currentPID;
 }
+
+
