@@ -58,6 +58,8 @@ void ConsoleManager::run() {
 
 void ConsoleManager::initialize() {
     loadConfig();
+    scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
+
     isInitialized = true;
     std::cout << "System initialized successfully.\n";
 }
