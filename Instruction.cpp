@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cctype>
 
-// ally deleted printInstruction nilipat ko sa Instruction.h 
 
 class DeclareInstruction : public Instruction {
     std::string var;

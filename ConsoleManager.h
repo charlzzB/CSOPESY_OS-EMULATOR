@@ -7,6 +7,7 @@
 #include "Process.h"
 #include "Scheduler.h"
 #include <thread>
+#include <atomic>
 
 class ConsoleManager {
 public:
@@ -29,6 +30,12 @@ private:
     bool isInitialized = false;
     int currentPID = 0;
 
+    //adsded
+    std::unique_ptr<Scheduler> scheduler;
+    std::thread schedulerThread;
+    std::atomic<bool> ticking{false};
+    //added
+
     std::unordered_map<std::string, std::shared_ptr<Process>> processTable;
     std::vector<std::shared_ptr<Process>> allProcesses;
 
@@ -42,11 +49,4 @@ private:
     int minInstructions = 5;
     int maxInstructions = 10;
     int delayPerExec = 0;
-
-    Scheduler* scheduler = nullptr;
-    std::thread schedulerThread;
-    bool schedulerRunning = false;
-    std::vector<std::shared_ptr<Instruction>> generateDummyInstructions(int count);
-
-
 };
