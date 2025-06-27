@@ -166,13 +166,23 @@ void ConsoleManager::listScreens() {
     }
 }
 
+// screen -s make process 
 void ConsoleManager::screenAttach(const std::string& name) {
+    // If process does not exist, create it
     if (processTable.count(name) == 0) {
-        std::cout << "Process " << name << " not found.\n";
-        return;
+        int instructionCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
+        createProcess(name, instructionCount);
+
+        if (scheduler) {
+            scheduler->addProcess(processTable[name]);
+        } else {
+            std::cout << "Scheduler not started yet. Process will be idle until scheduler starts.\n";
+        }
     }
+
     processScreen(processTable[name]);
 }
+
 
 void ConsoleManager::screenReattach(const std::string& name) {
     screenAttach(name);
@@ -191,7 +201,9 @@ void ConsoleManager::processScreen(std::shared_ptr<Process> process) {
             std::cout << "Progress: " << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
             std::cout << "Core ID: " << process->getCoreID() << "\n";
             std::cout << "Logs: " << process->getOutput() << "\n";
-            if (process->isFinished()) std::cout << "Finished!\n";
+            if (process->isFinished()) {
+                std::cout << "Finished at: " << process->getFinishTimeString() << "\n";
+            }
         } else {
             std::cout << "Unknown screen command.\n";
         }
@@ -209,8 +221,12 @@ void ConsoleManager::generateReport() {
     for (auto& proc : allProcesses) {
         outFile << "Process: " << proc->getName()
                 << " PID: " << proc->getPID()
-                << " Progress: " << proc->getCommandCounter() << " / " << proc->getLinesOfCode() << "\n";
-    }
+                << " Progress: " << proc->getCommandCounter() << " / " << proc->getLinesOfCode();
+        if(proc->isFinished()){
+            outFile << " [" << proc->getFinishTimeString() << "]";
+        }
+        outFile <<"\n";
+            }
     outFile.close();
     std::cout << "Report saved to csopesy-log.txt.\n";
 }
