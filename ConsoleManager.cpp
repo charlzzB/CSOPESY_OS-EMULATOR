@@ -20,9 +20,20 @@ ConsoleManager* ConsoleManager::getInstance() {
 
 ConsoleManager::ConsoleManager() {}
 
+void headerprnt() {
+    std::cout << " ____   ______   ___   ______   _____   _____  __  __     _   " << std::endl;
+    std::cout << "/ ___| /   ___| / _ \\  |  _  \\ |  ___| /   ___  \\ \\ / / " << std::endl;
+    std::cout << "| |    | |__   | | | | | |_|  ||  |__  | |__       \\ V /   " << std::endl;
+    std::cout << "| |     \\___ \\ | | | | |   _/  |   __|  \\___    \\| |  " << std::endl;
+    std::cout << "| |__  ____| | | |_| | |  |    |  |__   ____| |      | |  " << std::endl;
+    std::cout << "\\____||______/ \\___/   |__|    |_____| |______/      |_| " << std::endl;
+    std::cout << "Hello, Welcome to CSOPESY commandline!" << std::endl;
+}
+
 void ConsoleManager::run() {
     std::string input;
-    std::cout << "Welcome to the OS Emulator Shell\n";
+    headerprnt();
+ //   std::cout << "Welcome to the OS Emulator Shell\n";
 
     while (true) {
         std::cout << "\nRoot:\\> ";
