@@ -6,25 +6,6 @@
 #include <algorithm>
 #include <cctype>
 
-class PrintInstruction : public Instruction {
-    std::string message;
-
-public:
-    PrintInstruction(const std::string& msg) : message(msg) {}
-
-    void execute(
-        const std::string& processName,
-        int coreID,
-        std::unordered_map<std::string, uint16_t>& variables,
-        std::string& outputLog,
-        bool& sleeping,
-        int& sleepTicks
-    ) override {
-        std::ostringstream oss;
-        oss << "Core " << coreID << " | " << processName << ": " << message << "\n";
-        outputLog += oss.str();
-    }
-};
 
 class DeclareInstruction : public Instruction {
     std::string var;

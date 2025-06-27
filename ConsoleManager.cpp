@@ -1,5 +1,6 @@
 #include "ConsoleManager.h"
 #include "Instruction.h"
+#include "InstructionsTypes.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -19,12 +20,23 @@ ConsoleManager* ConsoleManager::getInstance() {
 
 ConsoleManager::ConsoleManager() {}
 
+void headerprnt() {
+    std::cout << " ____   ______   ___   ______   _____   _____  __  __     _   " << std::endl;
+    std::cout << "/ ___| /   ___| / _ \\  |  _  \\ |  ___| /   ___  \\ \\ / / " << std::endl;
+    std::cout << "| |    | |__   | | | | | |_|  ||  |__  | |__       \\ V /   " << std::endl;
+    std::cout << "| |     \\___ \\ | | | | |   _/  |   __|  \\___    \\| |  " << std::endl;
+    std::cout << "| |__  ____| | | |_| | |  |    |  |__   ____| |      | |  " << std::endl;
+    std::cout << "\\____||______/ \\___/   |__|    |_____| |______/      |_| " << std::endl;
+    std::cout << "Hello, Welcome to CSOPESY commandline!" << std::endl;
+}
+
 void ConsoleManager::run() {
     std::string input;
-    std::cout << "Welcome to the OS Emulator Shell\n";
+    headerprnt();
+ //   std::cout << "Welcome to the OS Emulator Shell\n";
 
     while (true) {
-        std::cout << "\n> ";
+        std::cout << "\nRoot:\\> ";
         std::getline(std::cin, input);
 
         if (input == "exit") break;
@@ -90,53 +102,150 @@ void ConsoleManager::loadConfig() {
 void ConsoleManager::startScheduler() {
     std::cout << "Starting process generation...\n";
 
-    // For simulation: generate 5 dummy processes
-    for (int i = 0; i < 5; i++) {
+    scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
+    // For simulation
+    for (int i = 0; i < numCPU; ++i) {
         std::string procName = "p" + std::to_string(currentPID + 1);
 
         int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
-        createProcess(procName, instCount);
+        createProcess(procName, instCount, true);
+        scheduler->addProcess(allProcesses.back());
     }
 
-    //for CPU ticks
-    for(int cycle= 0; cycle < 280; ++cycle){
-        scheduler->tick();
-        std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
-    }
+
+    //start ticking
+    ticking = true;
+
+    //thick thread
+    schedulerThread = std::thread([this](){
+        while (ticking){
+            scheduler->tick();
+            std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
+        }
+
+    });
+
+    //make processes in the background
+    std::thread([this](){
+        while(ticking){
+            std::this_thread::sleep_for(std::chrono::seconds(batchProcessFreq));
+
+            // Generate a new dummy process
+            std::string procName = "p" + std::to_string(++currentPID);
+            int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
+            createProcess(procName, instCount, false);
+            scheduler->addProcess(allProcesses.back());
+
+            //std::cout << "Auto-created process: " << procName << " with " << instCount << " instructions\n";
+        }
+
+    }).detach();
+
+    // // create scheduler
+    // scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
+    // for(const auto& proc : allProcesses){
+    //     scheduler->addProcess(proc);
+    // }
+
+    // //ticking thread
+    // ticking = true;
+    // schedulerThread = std::thread([this]() {
+    //     while (ticking) {
+    //     //    std::cout << "[TICK]\n";
+    //         scheduler->tick();
+    //         std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
+    //     }
+    // });
+    std::cout<<"Scheduler started\n";
 }
 
 void ConsoleManager::stopScheduler() {
-    std::cout << "Process generation stopped.\n";
-    // No thread for now, so no-op
+    if (!ticking) {
+        std::cout << "Scheduler is not running.\n";
+        return;
+    }
+
+    std::cout << "Stopping scheduler...\n";
+    ticking = false;
+
+    if (schedulerThread.joinable()) {
+        schedulerThread.join();
+    }
+
+    std::cout << "Scheduler stopped.\n";
 }
 
-void ConsoleManager::createProcess(const std::string& name, int instructionCount) {
-    auto proc = std::make_shared<Process>(++currentPID, name, instructionCount);
+void ConsoleManager::createProcess(const std::string& name, int instructionCount, bool silent) {
+   auto proc = std::make_shared<Process>(++currentPID, name, instructionCount);
+
+    // Generate dummy instructions
+    std::vector<std::shared_ptr<Instruction>> insts;
+    for (int i = 0; i < instructionCount; ++i) {
+        if (i % 4 == 0)
+            insts.push_back(std::make_shared<DeclareInstruction>("x", i));
+        else if (i % 4 == 1)
+            insts.push_back(std::make_shared<AddInstruction>("x", "x", "1"));
+        else if (i % 4 == 2)
+            insts.push_back(std::make_shared<SubtractInstruction>("x", "x", "1"));
+        else
+            insts.push_back(std::make_shared<PrintInstruction>("Instruction executed."));
+    }
+
+    proc->setInstructions(insts);
+
     processTable[name] = proc;
     allProcesses.push_back(proc);
-    std::cout << "Process " << name << " created with " << instructionCount << " instructions.\n";
-
-    if(scheduler){
-        scheduler->addProcess(proc);
+    if(silent){
+        std::cout << "Process " << name << " created with " << instructionCount << " instructions.\n";
     }
 }
 
 void ConsoleManager::listScreens() {
     std::cout << "Currently running processes:\n";
+    bool anyShown = false;
     for (auto& pair : processTable) {
-        if (!pair.second->isFinished()) {
-            std::cout << "  " << pair.first << "\n";
+        auto proc = pair.second;
+        if (!proc->isFinished()) {
+            anyShown = true;
+            std::string stateStr;
+            switch (proc->getState()) {
+                case Process::READY: stateStr = "READY"; break;
+                case Process::RUNNING: stateStr = "RUNNING"; break;
+                case Process::WAITING: stateStr = "WAITING"; break;
+                case Process::FINISHED: stateStr = "FINISHED"; break;
+            }
+            std::cout << "  " << proc->getName() << " (PID: " << proc->getPID()
+                      << ", State: " << stateStr << ")\n";
         }
     }
+
+    if (!anyShown) {
+        std::cout << "  No active processes.\n";
+    }
+    // for (auto& pair : processTable) {
+    //     if (!pair.second->isFinished()) {
+    //         std::cout << "  " << pair.first << "\n";
+    //     }
+    // }
 }
 
+// screen -s make process 
 void ConsoleManager::screenAttach(const std::string& name) {
+    // If process does not exist, create it
     if (processTable.count(name) == 0) {
-        std::cout << "Process " << name << " not found.\n";
-        return;
+        int instructionCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
+        createProcess(name, instructionCount, true);
+
+        if (scheduler) {
+            scheduler->addProcess(processTable[name]);
+        } else {
+            std::cout << "Scheduler not started yet. Process will be idle until scheduler starts.\n";
+        }
     }
+
     processScreen(processTable[name]);
 }
+
 
 void ConsoleManager::screenReattach(const std::string& name) {
     screenAttach(name);
@@ -155,7 +264,9 @@ void ConsoleManager::processScreen(std::shared_ptr<Process> process) {
             std::cout << "Progress: " << process->getCommandCounter() << " / " << process->getLinesOfCode() << "\n";
             std::cout << "Core ID: " << process->getCoreID() << "\n";
             std::cout << "Logs: " << process->getOutput() << "\n";
-            if (process->isFinished()) std::cout << "Finished!\n";
+            if (process->isFinished()) {
+                std::cout << "Finished at: " << process->getFinishTimeString() << "\n";
+            }
         } else {
             std::cout << "Unknown screen command.\n";
         }
@@ -173,8 +284,12 @@ void ConsoleManager::generateReport() {
     for (auto& proc : allProcesses) {
         outFile << "Process: " << proc->getName()
                 << " PID: " << proc->getPID()
-                << " Progress: " << proc->getCommandCounter() << " / " << proc->getLinesOfCode() << "\n";
-    }
+                << " Progress: " << proc->getCommandCounter() << " / " << proc->getLinesOfCode();
+        if(proc->isFinished()){
+            outFile << " [" << proc->getFinishTimeString() << "]";
+        }
+        outFile <<"\n";
+            }
     outFile.close();
     std::cout << "Report saved to csopesy-log.txt.\n";
 }

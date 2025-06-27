@@ -6,6 +6,9 @@
 #include <vector>
 #include "Scheduler.h"
 #include "Process.h"
+#include "Scheduler.h"
+#include <thread>
+#include <atomic>
 
 class ConsoleManager {
 public:
@@ -15,7 +18,7 @@ public:
     void initialize(); // Loads config and initializes the scheduler
     void startScheduler();
     void stopScheduler();
-    void createProcess(const std::string& name, int instructionCount);
+    void createProcess(const std::string& name, int instructionCount, bool silent);
     void listScreens(); // screen -ls
     void screenAttach(const std::string& name); // screen -s <name>
     void screenReattach(const std::string& name); // screen -r <name>
@@ -27,6 +30,12 @@ private:
     static ConsoleManager* instance;
     bool isInitialized = false;
     int currentPID = 0;
+
+    //adsded
+    std::unique_ptr<Scheduler> scheduler;
+    std::thread schedulerThread;
+    std::atomic<bool> ticking{false};
+    //added
 
     std::unordered_map<std::string, std::shared_ptr<Process>> processTable;
     std::vector<std::shared_ptr<Process>> allProcesses;

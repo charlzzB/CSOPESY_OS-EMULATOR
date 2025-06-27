@@ -1,5 +1,7 @@
 #include "Process.h"
 #include <iostream>
+#include <iomanip>
+#include <sstream> 
 
 Process::Process(int pid, const std::string& name, int lines)
     : pid(pid), name(name), commandCounter(0), linesOfCode(lines),
@@ -22,6 +24,7 @@ void Process::executeNextInstruction(int coreID) {
 
     if (commandCounter >= linesOfCode) {
         currentState = FINISHED;
+        markFinished();
     }
 }
 
@@ -67,4 +70,20 @@ void Process::setState(ProcessState newState) {
 
 void Process::setInstructions(const std::vector<std::shared_ptr<Instruction>>& insts) {
     instructions = insts;
+}
+
+void Process::markFinished() {
+    if (!hasFinishTime) {
+        finishTime = std::chrono::system_clock::now();
+        hasFinishTime = true;
+    }
+}
+
+std::string Process::getFinishTimeString() const {
+    if (!hasFinishTime) return "N/A";
+    std::time_t finish_time = std::chrono::system_clock::to_time_t(finishTime);
+    std::tm local_tm = *std::localtime(&finish_time);
+    std::ostringstream oss;
+    oss << std::put_time(&local_tm, "%H:%M:%S %m/%d/%Y");
+    return oss.str();
 }

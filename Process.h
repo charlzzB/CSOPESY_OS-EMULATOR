@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <memory>
 #include <cstdint>
+#include <chrono>
 #include "Instruction.h"
 
 class Process {
@@ -28,6 +29,10 @@ public:
     void setState(ProcessState newState);
     void setInstructions(const std::vector<std::shared_ptr<Instruction>>& insts);
 
+    //for the finished time sa process
+    std::string getFinishTimeString() const;
+    void markFinished();
+
 private:
     int pid;
     std::string name;
@@ -42,4 +47,6 @@ private:
 
     bool sleeping = false;
     int sleepTicks = 0;
+    std::chrono::system_clock::time_point finishTime;
+    bool hasFinishTime = false;
 };

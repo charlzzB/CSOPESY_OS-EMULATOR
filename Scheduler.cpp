@@ -13,7 +13,6 @@ void Scheduler::addProcess(std::shared_ptr<Process> process) {
 
 void Scheduler::tick() {
     if (!isRunning) return;
-
     assignProcessesToCores();
     executeProcesses();
 }
