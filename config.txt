@@ -4,4 +4,4 @@ quantum-cycles 5
 batch-process-freq 2
 min-ins 5
 max-ins 10
-delays-per-exec 0
+delay-per-exec 10
