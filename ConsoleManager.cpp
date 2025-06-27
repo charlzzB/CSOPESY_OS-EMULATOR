@@ -189,11 +189,31 @@ void ConsoleManager::createProcess(const std::string& name, int instructionCount
 
 void ConsoleManager::listScreens() {
     std::cout << "Currently running processes:\n";
+    bool anyShown = false;
     for (auto& pair : processTable) {
-        if (!pair.second->isFinished()) {
-            std::cout << "  " << pair.first << "\n";
+        auto proc = pair.second;
+        if (!proc->isFinished()) {
+            anyShown = true;
+            std::string stateStr;
+            switch (proc->getState()) {
+                case Process::READY: stateStr = "READY"; break;
+                case Process::RUNNING: stateStr = "RUNNING"; break;
+                case Process::WAITING: stateStr = "WAITING"; break;
+                case Process::FINISHED: stateStr = "FINISHED"; break;
+            }
+            std::cout << "  " << proc->getName() << " (PID: " << proc->getPID()
+                      << ", State: " << stateStr << ")\n";
         }
     }
+
+    if (!anyShown) {
+        std::cout << "  No active processes.\n";
+    }
+    // for (auto& pair : processTable) {
+    //     if (!pair.second->isFinished()) {
+    //         std::cout << "  " << pair.first << "\n";
+    //     }
+    // }
 }
 
 // screen -s make process 
