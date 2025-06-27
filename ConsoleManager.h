@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#include "Scheduler.h"
 #include "Process.h"
 #include "Scheduler.h"
 #include <thread>
@@ -38,6 +39,7 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<Process>> processTable;
     std::vector<std::shared_ptr<Process>> allProcesses;
+    std::unique_ptr<Scheduler> scheduler;
 
     void processScreen(std::shared_ptr<Process> process);
     void loadConfig();

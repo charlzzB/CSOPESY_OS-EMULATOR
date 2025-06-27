@@ -70,6 +70,8 @@ void ConsoleManager::run() {
 
 void ConsoleManager::initialize() {
     loadConfig();
+    scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
+
     isInitialized = true;
     std::cout << "System initialized successfully.\n";
 }
@@ -109,6 +111,7 @@ void ConsoleManager::startScheduler() {
         createProcess(procName, instCount, true);
         scheduler->addProcess(allProcesses.back());
     }
+
 
     //start ticking
     ticking = true;
@@ -153,8 +156,7 @@ void ConsoleManager::startScheduler() {
     //         std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
     //     }
     // });
-    std::cout<<"Scheduler started\n"; 
-
+    std::cout<<"Scheduler started\n";
 }
 
 void ConsoleManager::stopScheduler() {
