@@ -95,25 +95,53 @@ void ConsoleManager::startScheduler() {
         std::string procName = "p" + std::to_string(currentPID + 1);
 
         int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
-        createProcess(procName, instCount);
+        createProcess(procName, instCount, true);
         scheduler->addProcess(allProcesses.back());
     }
 
-    // create scheduler
-    scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
-    for(const auto& proc : allProcesses){
-        scheduler->addProcess(proc);
-    }
-
-    //ticking thread
+    //start ticking
     ticking = true;
-    schedulerThread = std::thread([this]() {
-        while (ticking) {
-        //    std::cout << "[TICK]\n";
+
+    //thick thread
+    schedulerThread = std::thread([this](){
+        while (ticking){
             scheduler->tick();
             std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
         }
+
     });
+
+    //make processes in the background
+    std::thread([this](){
+        while(ticking){
+            std::this_thread::sleep_for(std::chrono::seconds(batchProcessFreq));
+
+            // Generate a new dummy process
+            std::string procName = "p" + std::to_string(++currentPID);
+            int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
+            createProcess(procName, instCount, false);
+            scheduler->addProcess(allProcesses.back());
+
+            //std::cout << "Auto-created process: " << procName << " with " << instCount << " instructions\n";
+        }
+
+    }).detach();
+
+    // // create scheduler
+    // scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
+    // for(const auto& proc : allProcesses){
+    //     scheduler->addProcess(proc);
+    // }
+
+    // //ticking thread
+    // ticking = true;
+    // schedulerThread = std::thread([this]() {
+    //     while (ticking) {
+    //     //    std::cout << "[TICK]\n";
+    //         scheduler->tick();
+    //         std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
+    //     }
+    // });
     std::cout<<"Scheduler started\n"; 
 
 }
@@ -134,7 +162,7 @@ void ConsoleManager::stopScheduler() {
     std::cout << "Scheduler stopped.\n";
 }
 
-void ConsoleManager::createProcess(const std::string& name, int instructionCount) {
+void ConsoleManager::createProcess(const std::string& name, int instructionCount, bool silent) {
    auto proc = std::make_shared<Process>(++currentPID, name, instructionCount);
 
     // Generate dummy instructions
@@ -154,7 +182,9 @@ void ConsoleManager::createProcess(const std::string& name, int instructionCount
 
     processTable[name] = proc;
     allProcesses.push_back(proc);
-    std::cout << "Process " << name << " created with " << instructionCount << " instructions.\n";
+    if(silent){
+        std::cout << "Process " << name << " created with " << instructionCount << " instructions.\n";
+    }
 }
 
 void ConsoleManager::listScreens() {
@@ -171,7 +201,7 @@ void ConsoleManager::screenAttach(const std::string& name) {
     // If process does not exist, create it
     if (processTable.count(name) == 0) {
         int instructionCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
-        createProcess(name, instructionCount);
+        createProcess(name, instructionCount, true);
 
         if (scheduler) {
             scheduler->addProcess(processTable[name]);

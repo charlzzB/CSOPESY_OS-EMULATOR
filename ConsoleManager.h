@@ -17,7 +17,7 @@ public:
     void initialize(); // Loads config and initializes the scheduler
     void startScheduler();
     void stopScheduler();
-    void createProcess(const std::string& name, int instructionCount);
+    void createProcess(const std::string& name, int instructionCount, bool silent);
     void listScreens(); // screen -ls
     void screenAttach(const std::string& name); // screen -s <name>
     void screenReattach(const std::string& name); // screen -r <name>
