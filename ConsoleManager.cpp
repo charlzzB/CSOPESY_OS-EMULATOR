@@ -38,9 +38,29 @@ void headerprnt() {
     std::cout << "================================================================================" << std::endl;
 }
 
+void Option1() {
+    std::cout << "\nOptions:" << std::endl;
+    std::cout << "- initialize" << std::endl;
+    std::cout << "- exit" << std::endl;
+}
+
+void Option2() {
+    std::cout << "\nOptions:" << std::endl;
+    std::cout << "- screen -ls" << std::endl;
+    std::cout << "- screen -s [process name]" << std::endl;
+    std::cout << "- screen -r [process name]" << std::endl;
+    std::cout << "- scheduler-start" << std::endl;
+    std::cout << "- scheduler-stop" << std::endl;
+    std::cout << "- report-util" << std::endl;
+    std::cout << "- exit" << std::endl;
+}
+
+
+
 void ConsoleManager::run() {
     std::string input;
     headerprnt();
+    Option1();
  //   std::cout << "Welcome to the OS Emulator Shell\n";
 
     while (true) {
@@ -73,6 +93,7 @@ void ConsoleManager::run() {
         } else {
             std::cout << "Unknown command.\n";
         }
+        Option2();
     }
 }
 
