@@ -2,10 +2,10 @@ CSOPESY-OS EMULATOR PROJECT (Phase 1)
 
 
 Developers:
-Alcantara, Keira S22
-Brodeth, Charlize S13
-Fernandez, Candice S22
-Zulueta, Alliyah S22
+- Alcantara, Keira S22
+- Brodeth, Charlize S13
+- Fernandez, Candice S22
+- Zulueta, Alliyah S22
 
 How to run:
 1. Make sure c++ version is at least version 11 onwards
