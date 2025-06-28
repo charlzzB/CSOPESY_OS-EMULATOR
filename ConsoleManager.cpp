@@ -10,7 +10,7 @@
 #include <random>
 
 
-const int cpuCycleTicks = 1000; //constant ticks ng CPU
+const int cpuCycleTicks = 100; //constant ticks ng CPU
 ConsoleManager* ConsoleManager::instance = nullptr;
 
 ConsoleManager* ConsoleManager::getInstance() {
