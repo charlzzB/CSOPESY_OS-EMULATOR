@@ -1,8 +1,9 @@
 #include "Scheduler.h"
 #include <iostream>
+#include <cstdint>
 
-Scheduler::Scheduler(int numCores, const std::string& algorithm, int quantum)
-    : numCores(numCores), schedulingAlgorithm(algorithm), quantum(quantum), isRunning(true) {
+Scheduler::Scheduler(int numCores, const std::string& algorithm, int quantum, int delay)
+    : numCores(numCores), schedulingAlgorithm(algorithm), quantum(quantum), isRunning(true), delayPerExec(delay){
     cores.resize(numCores);
 }
 
@@ -43,6 +44,14 @@ void Scheduler::executeProcesses() {
         auto& core = cores[i];
         if (core.currentProcess && !core.currentProcess->isFinished()) {
             core.currentProcess->executeNextInstruction(i);
+
+            if(delayPerExec > 0){
+                volatile uint64_t busy = 0;
+                for (int j = 0; j < delayPerExec; ++j){
+                    busy += j;
+                }
+
+            }
 
             if (schedulingAlgorithm == "rr") {
                 core.remainingQuantum--;

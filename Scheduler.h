@@ -9,7 +9,7 @@
 
 class Scheduler {
 public:
-    Scheduler(int numCores, const std::string& algorithm, int quantum = 1);
+    Scheduler(int numCores, const std::string& algorithm, int quantum = 1, int delay = 0);
 
     void addProcess(std::shared_ptr<Process> process);
     void tick(); // Simulates one CPU cycle
@@ -23,6 +23,7 @@ private:
     int numCores;
     std::string schedulingAlgorithm; // "fcfs" or "rr"
     int quantum;
+    int delayPerExec = 0;
 
     struct Core {
         std::shared_ptr<Process> currentProcess = nullptr;

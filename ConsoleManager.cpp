@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <random>
 
+
+const int cpuCycleTicks = 1000; //constant ticks ng CPU
 ConsoleManager* ConsoleManager::instance = nullptr;
 
 ConsoleManager* ConsoleManager::getInstance() {
@@ -52,16 +54,13 @@ void Option2() {
     std::cout << "- scheduler-start" << std::endl;
     std::cout << "- scheduler-stop" << std::endl;
     std::cout << "- report-util" << std::endl;
-    std::cout << "- check" << std::endl;
     std::cout << "- exit" << std::endl;
 }
-
-
 
 void ConsoleManager::run() {
     std::string input;
     headerprnt();
-    Option1();
+    Option1(); 
  //   std::cout << "Welcome to the OS Emulator Shell\n";
 
     while (true) {
@@ -91,8 +90,6 @@ void ConsoleManager::run() {
             stopScheduler();
         } else if (input == "report-util") {
             generateReport();
-        } else if (input == "check"){
-            printConfig();
         } else {
             std::cout << "Unknown command.\n";
         }
@@ -143,7 +140,7 @@ void ConsoleManager::startScheduler() {
 
     scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
     // For simulation
-    for (int i = 0; i < numCPU; ++i) {
+    for (int i = 0; i < batchProcessFreq; ++i) {
         std::string procName = "p" + std::to_string(currentPID + 1);
 
         int instCount = minInstructions + (rand() % (maxInstructions - minInstructions + 1));
@@ -158,7 +155,7 @@ void ConsoleManager::startScheduler() {
     schedulerThread = std::thread([this](){
         while (ticking){
             scheduler->tick();
-            std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
+            std::this_thread::sleep_for(std::chrono::milliseconds(cpuCycleTicks));
         }
 
     });
