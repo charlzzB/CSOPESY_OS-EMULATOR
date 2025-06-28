@@ -21,13 +21,21 @@ ConsoleManager* ConsoleManager::getInstance() {
 ConsoleManager::ConsoleManager() {}
 
 void headerprnt() {
+    std::cout << "================================================================================" << std::endl;
     std::cout << " ____   ______   ___   ______   _____   _____  __  __     _   " << std::endl;
     std::cout << "/ ___| /   ___| / _ \\  |  _  \\ |  ___| /   ___  \\ \\ / / " << std::endl;
     std::cout << "| |    | |__   | | | | | |_|  ||  |__  | |__       \\ V /   " << std::endl;
     std::cout << "| |     \\___ \\ | | | | |   _/  |   __|  \\___    \\| |  " << std::endl;
     std::cout << "| |__  ____| | | |_| | |  |    |  |__   ____| |      | |  " << std::endl;
     std::cout << "\\____||______/ \\___/   |__|    |_____| |______/      |_| " << std::endl;
-    std::cout << "Hello, Welcome to CSOPESY commandline!" << std::endl;
+    std::cout << "Hello, Welcome to CSOPESY OS-Emulator!" << std::endl;
+    std::cout << "================================================================================" << std::endl;
+    std::cout << "Developers: " << std::endl;
+    std::cout << "- Keira Gabrielle C. Alcantara" << std::endl;
+    std::cout << "- Charlize Kirsten M. Brodeth" << std::endl;
+    std::cout << "- Candice Aura T. Fernandez" << std::endl;
+    std::cout << "- Alliyah Gaberielle D. Zulueta" << std::endl;
+    std::cout << "================================================================================" << std::endl;
 }
 
 void ConsoleManager::run() {
