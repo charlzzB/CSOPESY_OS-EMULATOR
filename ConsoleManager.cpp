@@ -52,6 +52,7 @@ void Option2() {
     std::cout << "- scheduler-start" << std::endl;
     std::cout << "- scheduler-stop" << std::endl;
     std::cout << "- report-util" << std::endl;
+    std::cout << "- check" << std::endl;
     std::cout << "- exit" << std::endl;
 }
 
@@ -90,13 +91,12 @@ void ConsoleManager::run() {
             stopScheduler();
         } else if (input == "report-util") {
             generateReport();
-        } else if (input == "help") {
-            Option2();
         } else if (input == "check"){
             printConfig();
         } else {
             std::cout << "Unknown command.\n";
         }
+        Option2();
     }
 }
 

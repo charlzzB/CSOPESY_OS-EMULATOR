@@ -24,6 +24,7 @@ public:
     void screenReattach(const std::string& name); // screen -r <name>
     void generateReport(); // report-util
     int getCurrentPID() const;
+    void printConfig() const;
 
 private:
     ConsoleManager();
@@ -39,7 +40,7 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<Process>> processTable;
     std::vector<std::shared_ptr<Process>> allProcesses;
-    std::unique_ptr<Scheduler> scheduler;
+    //std::unique_ptr<Scheduler> scheduler;
 
     void processScreen(std::shared_ptr<Process> process);
     void loadConfig();
