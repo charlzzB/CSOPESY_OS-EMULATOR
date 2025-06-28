@@ -92,7 +92,7 @@ void ConsoleManager::run() {
             generateReport();
         } else if (input == "help") {
             Option2();
-        } else if ("check"){
+        } else if (input == "check"){
             printConfig();
         } else {
             std::cout << "Unknown command.\n";
@@ -106,7 +106,7 @@ void ConsoleManager::initialize() {
     std::cout << "System initialized successfully.\n";
 }
 
-void ConcoleManager::printConfig() const {
+void ConsoleManager::printConfig() const {
     std::cout << "=== Current Configuration ===\n";
     std::cout << "Number of CPUs: " << numCPU << "\n";
     std::cout << "Quantum Cycles: " << quantumCycles << "\n";
