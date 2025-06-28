@@ -90,10 +90,13 @@ void ConsoleManager::run() {
             stopScheduler();
         } else if (input == "report-util") {
             generateReport();
+        } else if (input == "help") {
+            Option2();
+        } else if ("check"){
+            printConfig();
         } else {
             std::cout << "Unknown command.\n";
         }
-        Option2();
     }
 }
 
@@ -101,6 +104,15 @@ void ConsoleManager::initialize() {
     loadConfig();
     isInitialized = true;
     std::cout << "System initialized successfully.\n";
+}
+
+void ConcoleManager::printConfig() const {
+    std::cout << "=== Current Configuration ===\n";
+    std::cout << "Number of CPUs: " << numCPU << "\n";
+    std::cout << "Quantum Cycles: " << quantumCycles << "\n";
+    std::cout << "Batch Process Frequency: " << batchProcessFreq << "seconds\n";
+    std::cout << "Instruction Range: " << minInstructions << " - " << maxInstructions << "\n";
+    std::cout << "Delay per Execution: " << delayPerExec << "ms\n"; 
 }
 
 void ConsoleManager::loadConfig() {
