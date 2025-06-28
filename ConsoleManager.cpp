@@ -70,8 +70,6 @@ void ConsoleManager::run() {
 
 void ConsoleManager::initialize() {
     loadConfig();
-    scheduler = std::make_unique<Scheduler>(numCPU, schedulerAlgo, quantumCycles);
-
     isInitialized = true;
     std::cout << "System initialized successfully.\n";
 }
@@ -111,7 +109,6 @@ void ConsoleManager::startScheduler() {
         createProcess(procName, instCount, true);
         scheduler->addProcess(allProcesses.back());
     }
-
 
     //start ticking
     ticking = true;
@@ -156,7 +153,8 @@ void ConsoleManager::startScheduler() {
     //         std::this_thread::sleep_for(std::chrono::milliseconds(delayPerExec));
     //     }
     // });
-    std::cout<<"Scheduler started\n";
+    std::cout<<"Scheduler started\n"; 
+
 }
 
 void ConsoleManager::stopScheduler() {
@@ -200,8 +198,20 @@ void ConsoleManager::createProcess(const std::string& name, int instructionCount
     }
 }
 
+//screen -ls (show ongoing and finished processes)
 void ConsoleManager::listScreens() {
-    std::cout << "Currently running processes:\n";
+    std::cout << "=== CPU Utilization Summary ===\n";
+
+    int totalCores = numCPU;
+    int usedCores = scheduler ? (totalCores - scheduler->getAvailableCores()) : 0;
+    int availableCores = scheduler ? scheduler->getAvailableCores() : totalCores;
+
+    std::cout << "Total Cores: " << totalCores << "\n";
+    std::cout << "Used Cores: " << usedCores << "\n";
+    std::cout << "Available Cores: " << availableCores << "\n\n";
+
+
+    std::cout << "=== Currently RUNNING/READY/WAITING processes ===\n";
     bool anyShown = false;
     for (auto& pair : processTable) {
         auto proc = pair.second;
@@ -214,8 +224,14 @@ void ConsoleManager::listScreens() {
                 case Process::WAITING: stateStr = "WAITING"; break;
                 case Process::FINISHED: stateStr = "FINISHED"; break;
             }
-            std::cout << "  " << proc->getName() << " (PID: " << proc->getPID()
-                      << ", State: " << stateStr << ")\n";
+            std::cout << "  " << proc->getName()
+                      << " (PID: " << proc->getPID()
+                      << ", Core: " << proc->getCoreID()
+                      << ", State: " << stateStr << ", Progress: "
+                      << proc->getCommandCounter() << "/" << proc->getLinesOfCode()
+                      << ")\n";
+            // std::cout << "  " << proc->getName() << " (PID: " << proc->getPID()
+            //           << ", State: " << stateStr << ")\n";
         }
     }
 
@@ -227,6 +243,24 @@ void ConsoleManager::listScreens() {
     //         std::cout << "  " << pair.first << "\n";
     //     }
     // }
+
+    std::cout << "\n=== Finished Processes ===\n";
+    bool anyFinished = false;
+    for (const auto& pair : processTable) {
+        auto proc = pair.second;
+        if (proc->isFinished()) {
+            anyFinished = true;
+            std::cout << "  " << proc->getName()
+                      << " (PID: " << proc->getPID()
+                      << ", Core: " << proc->getCoreID()
+                      << ", Finished at: " << proc->getFinishTimeString()
+                      << ", Total Instructions: " << proc->getLinesOfCode()
+                      << ")\n";
+        }
+    }
+    if (!anyFinished) {
+        std::cout << "  No finished processes yet.\n";
+    }
 }
 
 // screen -s make process 
@@ -248,7 +282,13 @@ void ConsoleManager::screenAttach(const std::string& name) {
 
 
 void ConsoleManager::screenReattach(const std::string& name) {
-    screenAttach(name);
+    auto it = processTable.find(name);
+    if(it == processTable.end()){
+        std::cout << "Process \"" << name << "\" does not exist.\n";
+        return;
+    }
+
+    processScreen(it->second);
 }
 
 void ConsoleManager::processScreen(std::shared_ptr<Process> process) {
